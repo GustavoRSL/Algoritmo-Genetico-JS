@@ -1,3 +1,28 @@
+// Dicionário para auxiliar com números binários na hora de realizar cross-over e mutação
+var dict = new Map();
+dict.set(-10, '11010');
+dict.set(-9, '11001');
+dict.set(-8, '11000');
+dict.set(-7, '10111');
+dict.set(-6, '10110');
+dict.set(-5, '10101');
+dict.set(-4, '10100');
+dict.set(-3, '10011');
+dict.set(-2, '10010');
+dict.set(-1, '10001');
+dict.set(0, '00000');
+dict.set(1, '00001');
+dict.set(2, '00010');
+dict.set(3, '00011');
+dict.set(4, '00100');
+dict.set(5, '00101');
+dict.set(6, '00110');
+dict.set(7, '00111');
+dict.set(8, '01000');
+dict.set(9, '01001');
+dict.set(10, '01010');
+////////////////////////////////////////////////////
+// Variavéis auxilizares
 var genes = [];
 var maxCromossomos = 30;
 var maxGeracoes = 20;
@@ -23,7 +48,7 @@ function populacaoInicial() {
   for (var i = 0; i < maxCromossomos; i++) {
     var novoCromossomo = new cromossomos();
     novoCromossomo.numero = randomInt(min, max)
-    novoCromossomo.binario = novoCromossomo.numero.toString(2)
+    novoCromossomo.binario = dict.get(novoCromossomo.numero)
     genes.push(novoCromossomo);
   }
 }
@@ -40,6 +65,7 @@ function avaliacao(populacao) {
 // Terceiro passo -> Enquanto critério de parada não for satisfeito
 function algoritmoGenetico(populacao) {
   var novaPopulacao = [];
+  console.log(populacao)
   // Selecionar os indivíduos mais aptos.
   populacao.sort(function (a, b) { // Realiza uma ordenação por aqueles que possuem uma melhor pontuação
     if (a.pontuacao > b.pontuacao) {
@@ -53,33 +79,47 @@ function algoritmoGenetico(populacao) {
   pai = populacao[0];
   mae = populacao[1];
   achou = true;
-  // Garantir que os 2 resultados sejam diferentes.
-  for(individuo in populacao){
-    if(populacao[individuo].pontuacao != pai.pontuacao && achou == true){
+  // Gerar 2 resultados diferentes se possível.
+  for (individuo in populacao) {
+    if (populacao[individuo].pontuacao != pai.pontuacao && achou == true) {
       mae = populacao[individuo];
       achou = false;
     }
   }
 
-  if(geracaoAtual < maxGeracoes) { // Criterio de parada gerar 20 gerações
+  if (geracaoAtual < maxGeracoes) { // Criterio de parada gerar 20 gerações
 
     // Dois melhores resultados da população foram salvos.
     novaPopulacao.push(pai);
     novaPopulacao.push(mae);
 
     // Criar novos indivíduos aplicando os operadores crossover e mutação.
-    for(var j=0; j<maxCromossomos-2; j++){
+    for (var j = 0; j < maxCromossomos - 2; j++) {
       var novoCromossomo = new cromossomos();
       // Mutação
-      var randomMutacao = Math.floor((Math.random()*100)+1); // Aplicar Mutação com taxa de 1%
-      if(randomMutacao == 1){
-        novoCromossomo.numero = randomInt(min, max)
-        novoCromossomo.binario = novoCromossomo.numero.toString(2);
-        console.log("Digimon digienvolve para ANTEDEGUEMON!!!"); 
+      var randomMutacao = Math.floor((Math.random() * 100) + 1); // Aplicar Mutação com taxa de 1%
+      if (randomMutacao == 1) {
+        binarioPai = dict.get(pai.numero);
+        auxMutante = '';
+        for (var i = 0; i < binarioPai.length; i++) {
+          if (binarioPai[i] == '0') {
+            auxMutante += '1';
+          }
+          else {
+            auxMutante += '0';
+          }
+        }
+        novoCromossomo.numero = getChave(auxMutante)
+        novoCromossomo.binario = auxMutante;
+        console.log("Digimon digienvolve para ANTEDEGUEMON!!!");
       }
       else {
-        console.log("Pai:"+pai.binario)
-        console.log("Mãe: "+mae.binario)
+        binarioPai = dict.get(pai.numero);
+        binarioMae = dict.get(mae.numero);
+        novoBinario = binarioMae.slice(0, 3) + binarioPai.slice(3);
+        console.log(binarioPai.slice(0, 1) + binarioMae.slice(1,2) + binarioPai.slice(2,3) + binarioMae.slice(3));
+        novoCromossomo.numero = getChave(novoBinario)
+        novoCromossomo.binario = novoBinario;
       }
       // Armazenar os novos indivíduos em uma nova população.
       novaPopulacao.push(novoCromossomo);
@@ -91,7 +131,15 @@ function algoritmoGenetico(populacao) {
   }
   else {
     console.log("Acabou!")
-    //console.log(populacao)
+    console.log(populacao)
+  }
+}
+
+function getChave(valorAux) {
+  for (const [chave, valor] of dict.entries()) {
+    if (valor == valorAux) {
+      return chave;
+    }
   }
 }
 
