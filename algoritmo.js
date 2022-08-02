@@ -55,6 +55,7 @@ function populacaoInicial() {
 
 // Segundo passo -> Avaliar cada indivíduo da população. 
 function avaliacao(populacao) {
+
   for (individuo in populacao) {
     //Calculo de Fitness
     x = populacao[individuo].numero;
@@ -64,8 +65,6 @@ function avaliacao(populacao) {
 
 // Terceiro passo -> Enquanto critério de parada não for satisfeito
 function algoritmoGenetico(populacao) {
-  var novaPopulacao = [];
-  console.log(populacao)
   // Selecionar os indivíduos mais aptos.
   populacao.sort(function (a, b) { // Realiza uma ordenação por aqueles que possuem uma melhor pontuação
     if (a.pontuacao > b.pontuacao) {
@@ -76,6 +75,9 @@ function algoritmoGenetico(populacao) {
     }
     return 0;
   })
+
+  // Elimina os 3 individuos menos aptos, para permanecer 2 mais aptos + 1 que será o cross-over ou mutação.
+
   pai = populacao[0];
   mae = populacao[1];
   achou = true;
@@ -87,47 +89,51 @@ function algoritmoGenetico(populacao) {
     }
   }
 
-  if (geracaoAtual < maxGeracoes) { // Criterio de parada gerar 20 gerações
 
+
+  if (geracaoAtual < maxGeracoes) { // Criterio de parada gerar 20 gerações
+    populacao.pop();
+    populacao.pop();
+    populacao.pop();
     // Dois melhores resultados da população foram salvos.
-    novaPopulacao.push(pai);
-    novaPopulacao.push(mae);
+    populacao.push(pai);
+    populacao.push(mae);
 
     // Criar novos indivíduos aplicando os operadores crossover e mutação.
-    for (var j = 0; j < maxCromossomos - 2; j++) {
-      var novoCromossomo = new cromossomos();
-      // Mutação
-      var randomMutacao = Math.floor((Math.random() * 100) + 1); // Aplicar Mutação com taxa de 1%
-      if (randomMutacao == 1) {
-        binarioPai = dict.get(pai.numero);
-        auxMutante = '';
-        for (var i = 0; i < binarioPai.length; i++) {
-          if (binarioPai[i] == '0') {
-            auxMutante += '1';
-          }
-          else {
-            auxMutante += '0';
-          }
+
+    var novoCromossomo = new cromossomos();
+    // Mutação
+    var randomMutacao = Math.floor((Math.random() * 100) + 1); // Aplicar Mutação com taxa de 1%
+    if (randomMutacao == 1) {
+      binarioPai = dict.get(pai.numero);
+      auxMutante = '';
+      for (var i = 0; i < binarioPai.length; i++) {
+        if (binarioPai[i] == '0') {
+          auxMutante += '1';
         }
-        novoCromossomo.numero = getChave(auxMutante)
-        novoCromossomo.binario = auxMutante;
-        console.log("Digimon digienvolve para ANTEDEGUEMON!!!");
+        else {
+          auxMutante += '0';
+        }
       }
-      else {
-        binarioPai = dict.get(pai.numero);
-        binarioMae = dict.get(mae.numero);
-        novoBinario = binarioMae.slice(0, 3) + binarioPai.slice(3);
-        console.log(binarioPai.slice(0, 1) + binarioMae.slice(1,2) + binarioPai.slice(2,3) + binarioMae.slice(3));
-        novoCromossomo.numero = getChave(novoBinario)
-        novoCromossomo.binario = novoBinario;
-      }
-      // Armazenar os novos indivíduos em uma nova população.
-      novaPopulacao.push(novoCromossomo);
+      novoCromossomo.numero = getChave(auxMutante)
+      novoCromossomo.binario = auxMutante;
+      console.log("Digimon digienvolve para ANTEDEGUEMON!!!");
     }
+    else {
+      binarioPai = dict.get(pai.numero);
+      binarioMae = dict.get(mae.numero);
+      novoBinario = binarioPai.slice(0, 1) + binarioMae.slice(1, 2) + binarioMae.slice(2, 3) + binarioPai.slice(3);
+      novoCromossomo.numero = getChave(novoBinario)
+      novoCromossomo.binario = novoBinario;
+    }
+    // Armazenar os novos indivíduos em uma nova população.
+    populacao.push(novoCromossomo);
+
     geracaoAtual++;
     //Avaliar cada cromossomo da nova população.
-    avaliacao(novaPopulacao)
-    algoritmoGenetico(novaPopulacao);
+    avaliacao(populacao);
+    console.log(populacao);
+    algoritmoGenetico(populacao);
   }
   else {
     console.log("Acabou!")
